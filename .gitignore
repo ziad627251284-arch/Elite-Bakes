@@ -47,3 +47,6 @@ next-env.d.ts
 /elite-bakes-layout-fix/
 /elite-bakes-video-integration/
 /Elite-Bakes-Video-Kit_Al-Nassr_v1/
+
+# Cloudflare local state
+/.wrangler/
