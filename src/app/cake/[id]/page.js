@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getCakeById, getAllCakes } from "@/components/cakeData";
 import CakeVideoExperience from "@/components/CakeVideoExperience";
 
+export const instant = false;
+
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const cake = getCakeById(resolvedParams.id);
