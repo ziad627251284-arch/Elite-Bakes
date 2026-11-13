@@ -34,3 +34,16 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Cloudflare Workers
+
+The production Worker is `elite-bakes`. Keep the Wrangler `name` and the
+`WORKER_SELF_REFERENCE` service set to that same name.
+
+Install with `npm ci`. Build the Worker using `npm run build:worker` and
+validate the deploy bundle using `npm run deploy:check`.
+
+Workers Builds: production branch `main`, repository root, build command
+`npm run build:worker`, deploy command `npx wrangler deploy`.
+The Wrangler custom build also prepares the Worker when `wrangler deploy`
+is called directly. No static-export conversion is required.

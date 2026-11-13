@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "elite-bakes",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-13",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "elite-bakes"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "build": {
+    "command": "npm run build:worker"
+  }
+}
