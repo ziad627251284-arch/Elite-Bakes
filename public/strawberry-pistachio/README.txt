@@ -1,0 +1,1 @@
+Elite Bakes — prototype concept assets. AI-generated, not verified product photos or approved packaging. Layers are approximate and require visual QA and product-owner approval. Background removal is automated; inspect edge quality.
