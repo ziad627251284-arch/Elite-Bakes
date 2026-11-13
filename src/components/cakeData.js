@@ -21,9 +21,9 @@ export const cakes = [
     title: "كيكة نادي النصر",
     titleEn: "Al Nassr Celebration Cake",
     description: "كيكة احتفالية بتصميم نادي النصر وطبقات كريمة وفواكه مشكلة — وصف تصوري يحتاج اعتماد المكونات الفعلية.",
-    price: null,
+    price: 285,
     wholeImage: "/al-nassr/whole.png",
-    wrapperImage: null,
+    wrapperImage: "/al-nassr/packaging.webp",
     separateVideo: "/videos/al-nassr-separate.mp4",
     reassembleVideo: "/videos/al-nassr-reassemble.mp4",
     layers: [
