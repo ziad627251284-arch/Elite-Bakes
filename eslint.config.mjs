@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "backup/**",
     "elite-bakes-layout-fix/**",
+    "Elite-Bakes-Video-Kit_Al-Nassr_v1/**",
   ]),
 ]);
 

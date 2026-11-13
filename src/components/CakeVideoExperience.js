@@ -128,6 +128,7 @@ export default function CakeVideoExperience({ cake }) {
   };
 
   const showWrapper = () => {
+    if (!cake.wrapperImage) return;
     if (playing && !autoPlay) return;
     setAutoPlay(false);
     setPlaying(false);
@@ -177,18 +178,6 @@ export default function CakeVideoExperience({ cake }) {
   const layerClass =
     "absolute inset-0 h-full w-full object-contain transition-opacity ease-out";
   const fadeStyle = { transitionDuration: `${FADE_MS}ms` };
-
-  const handleMediaTimeUpdate = (dir) => (event) => {
-    if (activeDirRef.current !== dir) return;
-    const video = event.currentTarget;
-    if (
-      !video.ended &&
-      Number.isFinite(video.duration) &&
-      video.currentTime >= video.duration - 0.08
-    ) {
-      handleEnded(dir);
-    }
-  };
 
   return (
     <main
@@ -251,14 +240,16 @@ export default function CakeVideoExperience({ cake }) {
               />
 
               {/* Packaging concept */}
-              <Image
-                src={cake.wrapperImage}
-                alt="تصور تجريبي لتغليف الكيكة"
-                fill
-                sizes="(max-width: 1024px) 100vw, 55vw"
-                style={fadeStyle}
-                className={`${layerClass} ${isWrapperVisible ? "opacity-100" : "opacity-0"}`}
-              />
+              {cake.wrapperImage && (
+                <Image
+                  src={cake.wrapperImage}
+                  alt="تصور تجريبي لتغليف الكيكة"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 55vw"
+                  style={fadeStyle}
+                  className={`${layerClass} ${isWrapperVisible ? "opacity-100" : "opacity-0"}`}
+                />
+              )}
 
               {/* Separate clip — stays mounted so the end frame persists */}
               <video
@@ -269,7 +260,17 @@ export default function CakeVideoExperience({ cake }) {
                 playsInline
                 preload="auto"
                 onEnded={() => handleEnded("separate")}
-                onTimeUpdate={handleMediaTimeUpdate("separate")}
+                onTimeUpdate={(event) => {
+                  if (activeDirRef.current !== "separate") return;
+                  const video = event.currentTarget;
+                  if (
+                    !video.ended &&
+                    Number.isFinite(video.duration) &&
+                    video.currentTime >= video.duration - 0.08
+                  ) {
+                    handleEnded("separate");
+                  }
+                }}
                 onError={() => {
                   activeDirRef.current = null;
                   setPlaying(false);
@@ -290,7 +291,17 @@ export default function CakeVideoExperience({ cake }) {
                 playsInline
                 preload="auto"
                 onEnded={() => handleEnded("reassemble")}
-                onTimeUpdate={handleMediaTimeUpdate("reassemble")}
+                onTimeUpdate={(event) => {
+                  if (activeDirRef.current !== "reassemble") return;
+                  const video = event.currentTarget;
+                  if (
+                    !video.ended &&
+                    Number.isFinite(video.duration) &&
+                    video.currentTime >= video.duration - 0.08
+                  ) {
+                    handleEnded("reassemble");
+                  }
+                }}
                 onError={() => {
                   activeDirRef.current = null;
                   setPlaying(false);
@@ -342,7 +353,7 @@ export default function CakeVideoExperience({ cake }) {
                 </>
               )}
 
-              {(scene === "whole" || scene === "separated" || (autoPlay && scene === "video")) && (
+              {(cake.wrapperImage) && (scene === "whole" || scene === "separated" || (autoPlay && scene === "video")) && (
                 <button type="button" disabled={playing && !autoPlay} onClick={showWrapper} className="min-h-12 rounded-xl border border-[#d9bca9] bg-white px-5 py-3 font-semibold text-[#663d43] transition-colors hover:bg-[#f7f0e9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#663d43] disabled:opacity-50">
                   شاهد التغليف
                 </button>

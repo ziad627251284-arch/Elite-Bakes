@@ -39,7 +39,7 @@ export default function CakeCard({ cake }) {
 
           <div className="flex items-center justify-between pt-4 border-t border-[#eee5dc]">
             <span className="font-bold text-lg text-[#663d43]">
-              {cake.price} ر.س
+              {cake.price == null ? "السعر عند الطلب" : `${cake.price} ر.س`}
             </span>
             <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#663d43] transition-colors group-hover:text-[#8b4a50]">
               عرض التفاصيل

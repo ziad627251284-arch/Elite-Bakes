@@ -16,6 +16,23 @@ export const cakes = [
       { id: "topping", name: "تزيين السطح", color: "#b5e48c", thickness: 22, imageSrc: "/strawberry-pistachio/layer-04.png", imageWidth: 375, imageHeight: 221 },
     ],
   },
+  {
+    id: "al-nassr",
+    title: "كيكة نادي النصر",
+    titleEn: "Al Nassr Celebration Cake",
+    description: "كيكة احتفالية بتصميم نادي النصر وطبقات كريمة وفواكه مشكلة — وصف تصوري يحتاج اعتماد المكونات الفعلية.",
+    price: null,
+    wholeImage: "/al-nassr/whole.png",
+    wrapperImage: null,
+    separateVideo: "/videos/al-nassr-separate.mp4",
+    reassembleVideo: "/videos/al-nassr-reassemble.mp4",
+    layers: [
+      { id: "base", name: "قاعدة الكيك", color: "#f9d432" },
+      { id: "fruit", name: "طبقة فواكه مشكلة وكريمة", color: "#f5e9d7" },
+      { id: "cream", name: "كريمة وفستق", color: "#f7f1dc" },
+      { id: "top", name: "السطح بشعار نادي النصر", color: "#1254a3" },
+    ],
+  },
 ];
 
 export const STRAWBERRY_PISTACHIO_CAKE = cakes[0];
