@@ -1,15 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function CakeVideoExperience({ cake }) {
-  const videoRef = useRef(null);
+const FADE_MS = 320;
 
-  const [scene, setScene] = useState("whole");
+export default function CakeVideoExperience({ cake }) {
+  const separateRef = useRef(null);
+  const reassembleRef = useRef(null);
+  const activeDirRef = useRef(null);
+  const finishGuard = useRef(false);
+
+  const [scene, setScene] = useState("whole"); // whole | separated | wrapper | video
+  const [direction, setDirection] = useState("separate"); // separate | reassemble
   const [playing, setPlaying] = useState(false);
-  const [direction, setDirection] = useState("separate");
   const [error, setError] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [autoPlay, setAutoPlay] = useState(true);
@@ -27,23 +32,74 @@ export default function CakeVideoExperience({ cake }) {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  useEffect(() => {
-    if (!autoPlay || scene === "wrapper" || scene === "video") return;
+  const videoFor = useCallback(
+    (dir) => (dir === "separate" ? separateRef.current : reassembleRef.current),
+    []
+  );
 
-    const timer = setTimeout(() => {
-      if (scene === "whole") {
-        setDirection("separate");
-        setScene("video");
-        setPlaying(true);
-      } else if (scene === "separated") {
-        setDirection("reassemble");
-        setScene("video");
-        setPlaying(true);
+  const playDirection = useCallback(
+    (dir) => {
+      const video = videoFor(dir);
+      const other = videoFor(dir === "separate" ? "reassemble" : "separate");
+
+      activeDirRef.current = dir;
+      finishGuard.current = false;
+
+      if (other) other.pause();
+
+      setDirection(dir);
+      setScene("video");
+      setPlaying(true);
+      setError(false);
+
+      if (!video) return;
+
+      try {
+        video.currentTime = 0;
+      } catch {
+        /* ignore seek errors before metadata */
       }
-    }, 0);
+
+      const promise = video.play();
+      if (promise && typeof promise.catch === "function") {
+        promise.catch(() => {
+          activeDirRef.current = null;
+          setPlaying(false);
+          setError(true);
+          setScene(dir === "separate" ? "whole" : "separated");
+        });
+      }
+    },
+    [videoFor]
+  );
+
+  // Kick off (or resume) the showcase loop from an idle state.
+  useEffect(() => {
+    if (!autoPlay || reducedMotion) return;
+    if (scene !== "whole" && scene !== "separated") return;
+
+    const nextDir = scene === "whole" ? "separate" : "reassemble";
+    const timer = setTimeout(() => playDirection(nextDir), 350);
 
     return () => clearTimeout(timer);
-  }, [scene, autoPlay]);
+  }, [scene, autoPlay, reducedMotion, playDirection]);
+
+  const handleEnded = useCallback(
+    (dir) => {
+      if (activeDirRef.current !== dir) return;
+      if (finishGuard.current) return;
+      finishGuard.current = true;
+
+      if (autoPlay && !reducedMotion) {
+        playDirection(dir === "separate" ? "reassemble" : "separate");
+      } else {
+        activeDirRef.current = null;
+        setPlaying(false);
+        setScene(dir === "separate" ? "separated" : "whole");
+      }
+    },
+    [autoPlay, reducedMotion, playDirection]
+  );
 
   const start = (nextDirection) => {
     if (playing) return;
@@ -52,76 +108,86 @@ export default function CakeVideoExperience({ cake }) {
     setAutoPlay(false);
 
     if (reducedMotion) {
-      setScene(
-        nextDirection === "separate" ? "separated" : "whole"
-      );
+      if (nextDirection === "separate") {
+        const video = separateRef.current;
+        if (video && Number.isFinite(video.duration)) {
+          try {
+            video.currentTime = Math.max(0, video.duration - 0.05);
+          } catch {
+            /* ignore */
+          }
+        }
+        setScene("separated");
+      } else {
+        setScene("whole");
+      }
       return;
     }
 
-    setDirection(nextDirection);
-    setScene("video");
-    setPlaying(true);
-  };
-
-  useEffect(() => {
-    if (!playing || scene !== "video") return;
-
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.load();
-
-    const handleCanPlay = () => {
-      video.removeEventListener("canplay", handleCanPlay);
-      const promise = video.play();
-      if (promise && typeof promise.catch === "function") {
-        promise.catch(() => {
-          setPlaying(false);
-          setError(true);
-          setScene(
-            direction === "separate" ? "whole" : "separated"
-          );
-        });
-      }
-    };
-
-    video.addEventListener("canplay", handleCanPlay);
-
-    return () => {
-      video.removeEventListener("canplay", handleCanPlay);
-      video.pause();
-    };
-  }, [playing, scene, direction]);
-
-  const finish = () => {
-    if (autoPlay) {
-      if (direction === "separate") {
-        setDirection("reassemble");
-      } else {
-        setDirection("separate");
-      }
-      setScene("video");
-      setPlaying(true);
-    } else {
-      setPlaying(false);
-      setScene(
-        direction === "separate" ? "separated" : "whole"
-      );
-    }
+    playDirection(nextDirection);
   };
 
   const showWrapper = () => {
     if (playing && !autoPlay) return;
     setAutoPlay(false);
     setPlaying(false);
+    activeDirRef.current = null;
+    separateRef.current?.pause();
+    reassembleRef.current?.pause();
     setScene("wrapper");
   };
 
   const returnToWhole = () => {
     if (playing && !autoPlay) return;
-    setAutoPlay(true);
-    setScene("whole");
     setError(false);
+    separateRef.current?.pause();
+    reassembleRef.current?.pause();
+    setScene("whole");
+    setAutoPlay(false);
+  };
+
+  // Keep the separate clip parked on its final (separated) frame while idle.
+  useEffect(() => {
+    if (scene !== "separated") return;
+    const video = separateRef.current;
+    if (!video) return;
+
+    const seekToEnd = () => {
+      if (Number.isFinite(video.duration)) {
+        try {
+          video.currentTime = Math.max(0, video.duration - 0.05);
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+
+    if (video.readyState >= 1) seekToEnd();
+    else video.addEventListener("loadedmetadata", seekToEnd, { once: true });
+
+    return () => video.removeEventListener("loadedmetadata", seekToEnd);
+  }, [scene]);
+
+  const isWholeVisible = scene === "whole";
+  const isWrapperVisible = scene === "wrapper";
+  const isSeparateVisible =
+    scene === "separated" || (scene === "video" && direction === "separate");
+  const isReassembleVisible = scene === "video" && direction === "reassemble";
+
+  const layerClass =
+    "absolute inset-0 h-full w-full object-contain transition-opacity ease-out";
+  const fadeStyle = { transitionDuration: `${FADE_MS}ms` };
+
+  const handleMediaTimeUpdate = (dir) => (event) => {
+    if (activeDirRef.current !== dir) return;
+    const video = event.currentTarget;
+    if (
+      !video.ended &&
+      Number.isFinite(video.duration) &&
+      video.currentTime >= video.duration - 0.08
+    ) {
+      handleEnded(dir);
+    }
   };
 
   return (
@@ -171,90 +237,70 @@ export default function CakeVideoExperience({ cake }) {
               bg-[radial-gradient(ellipse_at_center,#fffdf9_0%,#f5eee6_100%)]
             "
           >
-            <div
-              className="absolute inset-0"
-            >
+            <div className="absolute inset-0">
 
-              {scene === "video" ? (
-                <video
-                  key={direction}
-                  ref={videoRef}
-                  className="absolute inset-0 h-full w-full object-contain"
-                  playsInline
-                  muted
-                  preload="metadata"
-                  onEnded={finish}
-                  onTimeUpdate={(e) => {
-                    const video = e.currentTarget;
-                    if (
-                      video.duration &&
-                      video.currentTime >= video.duration - 0.15 &&
-                      !video.ended
-                    ) {
-                      finish();
-                    }
-                  }}
-                  onError={() => {
-                    setPlaying(false);
-                    setError(true);
-                    setScene(
-                      direction === "separate"
-                        ? "whole"
-                        : "separated"
-                    );
-                  }}
-                  aria-label={
-                    direction === "separate"
-                      ? "تفكيك الكيكة إلى طبقات كاملة"
-                      : "إعادة تجميع الكيكة"
-                  }
-                >
-                  <source
-                    src={
-                      direction === "separate"
-                        ? SEPARATE
-                        : REASSEMBLE
-                    }
-                    type="video/mp4"
-                  />
-                </video>
-              ) : scene === "wrapper" ? (
-                <Image
-                  src={cake.wrapperImage}
-                  alt="تصور تجريبي لتغليف الكيكة"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  className="absolute inset-0 h-full w-full object-contain"
-                />
-              ) : scene === "whole" ? (
-                <Image
-                  src={cake.wholeImage}
-                  alt={cake.title}
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  className="absolute inset-0 h-full w-full object-contain"
-                />
-              ) : (
-                <video
-                  className="absolute inset-0 h-full w-full object-contain"
-                  muted
-                  playsInline
-                  preload="metadata"
-                  onLoadedMetadata={(event) => {
-                    const video = event.currentTarget;
-                    if (Number.isFinite(video.duration)) {
-                      video.currentTime = Math.max(
-                        0,
-                        video.duration - 0.05
-                      );
-                    }
-                  }}
-                  aria-label="الكيكة بطبقاتها المنفصلة"
-                >
-                  <source src={SEPARATE} type="video/mp4" />
-                </video>
-              )}
+              {/* Whole cake (idle / initial state) */}
+              <Image
+                src={cake.wholeImage}
+                alt={cake.title}
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 55vw"
+                style={fadeStyle}
+                className={`${layerClass} ${isWholeVisible ? "opacity-100" : "opacity-0"}`}
+              />
+
+              {/* Packaging concept */}
+              <Image
+                src={cake.wrapperImage}
+                alt="تصور تجريبي لتغليف الكيكة"
+                fill
+                sizes="(max-width: 1024px) 100vw, 55vw"
+                style={fadeStyle}
+                className={`${layerClass} ${isWrapperVisible ? "opacity-100" : "opacity-0"}`}
+              />
+
+              {/* Separate clip — stays mounted so the end frame persists */}
+              <video
+                ref={separateRef}
+                className={`${layerClass} ${isSeparateVisible ? "opacity-100" : "opacity-0"}`}
+                style={fadeStyle}
+                muted
+                playsInline
+                preload="auto"
+                onEnded={() => handleEnded("separate")}
+                onTimeUpdate={handleMediaTimeUpdate("separate")}
+                onError={() => {
+                  activeDirRef.current = null;
+                  setPlaying(false);
+                  setError(true);
+                  setScene("whole");
+                }}
+                aria-label="تفكيك الكيكة إلى طبقات كاملة"
+              >
+                <source src={SEPARATE} type="video/mp4" />
+              </video>
+
+              {/* Reassemble clip — preloaded so the swap is instant */}
+              <video
+                ref={reassembleRef}
+                className={`${layerClass} ${isReassembleVisible ? "opacity-100" : "opacity-0"}`}
+                style={fadeStyle}
+                muted
+                playsInline
+                preload="auto"
+                onEnded={() => handleEnded("reassemble")}
+                onTimeUpdate={handleMediaTimeUpdate("reassemble")}
+                onError={() => {
+                  activeDirRef.current = null;
+                  setPlaying(false);
+                  setError(true);
+                  setScene("separated");
+                }}
+                aria-label="إعادة تجميع الكيكة"
+              >
+                <source src={REASSEMBLE} type="video/mp4" />
+              </video>
 
             </div>
 
