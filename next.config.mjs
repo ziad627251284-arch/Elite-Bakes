@@ -1,9 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // The catalogue has no request-time backend; publish it as Workers assets.
-  output: "export",
-  trailingSlash: true,
-  images: { unoptimized: true },
+  /* config options here */
+  cacheComponents: true,
+  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {

@@ -48,5 +48,7 @@ next-env.d.ts
 /elite-bakes-video-integration/
 /Elite-Bakes-Video-Kit_Al-Nassr_v1/
 
-# Cloudflare local state
+# Cloudflare generated files
+/.open-next/
 /.wrangler/
+.dev.vars*
