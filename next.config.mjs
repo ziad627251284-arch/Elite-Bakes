@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Cache Components staged rendering hangs in the Workers runtime.
+  // Keep standard Next.js rendering for Cloudflare/OpenNext.
   turbopack: {
     rules: {
       "*.css": {
