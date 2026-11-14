@@ -21,6 +21,7 @@ export default function CakeVideoExperience({ cake }) {
 
   const SEPARATE = cake.separateVideo;
   const REASSEMBLE = cake.reassembleVideo;
+  const PLAYBACK_RATE = cake.playbackRate ?? 1;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -60,6 +61,14 @@ export default function CakeVideoExperience({ cake }) {
         /* ignore seek errors before metadata */
       }
 
+      if (Number.isFinite(PLAYBACK_RATE) && PLAYBACK_RATE > 0) {
+        try {
+          video.playbackRate = PLAYBACK_RATE;
+        } catch {
+          /* ignore rate errors */
+        }
+      }
+
       const promise = video.play();
       if (promise && typeof promise.catch === "function") {
         promise.catch(() => {
@@ -70,7 +79,7 @@ export default function CakeVideoExperience({ cake }) {
         });
       }
     },
-    [videoFor]
+    [videoFor, PLAYBACK_RATE]
   );
 
   // Kick off (or resume) the showcase loop from an idle state.
@@ -277,6 +286,11 @@ export default function CakeVideoExperience({ cake }) {
                   setError(true);
                   setScene("whole");
                 }}
+                onLoadedMetadata={(event) => {
+                  if (Number.isFinite(PLAYBACK_RATE) && PLAYBACK_RATE > 0) {
+                    event.currentTarget.playbackRate = PLAYBACK_RATE;
+                  }
+                }}
                 aria-label="تفكيك الكيكة إلى طبقات كاملة"
               >
                 <source src={SEPARATE} type="video/mp4" />
@@ -308,6 +322,11 @@ export default function CakeVideoExperience({ cake }) {
                   setError(true);
                   setScene("separated");
                 }}
+                onLoadedMetadata={(event) => {
+                  if (Number.isFinite(PLAYBACK_RATE) && PLAYBACK_RATE > 0) {
+                    event.currentTarget.playbackRate = PLAYBACK_RATE;
+                  }
+                }}
                 aria-label="إعادة تجميع الكيكة"
               >
                 <source src={REASSEMBLE} type="video/mp4" />
@@ -315,15 +334,16 @@ export default function CakeVideoExperience({ cake }) {
 
             </div>
 
-            {/* Scene label badge */}
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10">
-              <div className="rounded-full border border-[#e7d9cb] bg-white/80 px-4 py-1.5 text-xs font-semibold text-[#755d54] shadow-sm" aria-live="polite">
-                {scene === "whole" && "الكيكة الكاملة"}
-                {scene === "separated" && "تفاصيل الطبقات"}
-                {scene === "wrapper" && "تصوّر التغليف"}
-                {scene === "video" && (direction === "separate" ? "جاري التفكيك…" : "جاري التجميع…")}
+            {/* Scene label badge — hidden while the video is animating */}
+            {scene !== "video" && (
+              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10">
+                <div className="rounded-full border border-[#e7d9cb] bg-white/80 px-4 py-1.5 text-xs font-semibold text-[#755d54] shadow-sm" aria-live="polite">
+                  {scene === "whole" && "الكيكة الكاملة"}
+                  {scene === "separated" && "تفاصيل الطبقات"}
+                  {scene === "wrapper" && "تصوّر التغليف"}
+                </div>
               </div>
-            </div>
+            )}
           </section>
 
           {/* Product information */}
