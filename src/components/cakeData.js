@@ -9,6 +9,7 @@ export const cakes = [
     wrapperImage: "/strawberry-pistachio/packaging.webp",
     separateVideo: "/videos/strawberry-pistachio-separate.mp4",
     reassembleVideo: "/videos/strawberry-pistachio-reassemble.mp4",
+    playbackRate: 1,
     layers: [
       { id: "base", name: "قاعدة الكيك", color: "#f3e5ab", thickness: 42, imageSrc: "/strawberry-pistachio/layer-01.png", imageWidth: 380, imageHeight: 199 },
       { id: "strawberry", name: "طبقة الفراولة", color: "#ff9aa2", thickness: 32, imageSrc: "/strawberry-pistachio/layer-02.png", imageWidth: 350, imageHeight: 200 },
@@ -20,12 +21,13 @@ export const cakes = [
     id: "al-nassr",
     title: "كيكة نادي النصر",
     titleEn: "Al Nassr Celebration Cake",
-    description: "كيكة احتفالية بتصميم نادي النصر وطبقات كريمة وفواكه مشكلة — وصف تصوري يحتاج اعتماد المكونات الفعلية.",
+    description: "كيكة احتفالية بتصميم نادي النصر وطبقات كريمة وفواكه مشكلة",
     price: 285,
     wholeImage: "/al-nassr/whole.png",
     wrapperImage: "/al-nassr/packaging.webp",
     separateVideo: "/videos/al-nassr-separate.mp4",
     reassembleVideo: "/videos/al-nassr-reassemble.mp4",
+    playbackRate: 0.7,
     layers: [
       { id: "base", name: "قاعدة الكيك", color: "#f9d432" },
       { id: "fruit", name: "طبقة فواكه مشكلة وكريمة", color: "#f5e9d7" },
