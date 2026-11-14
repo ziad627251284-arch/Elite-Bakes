@@ -37,22 +37,19 @@ export default function CakeCard({ cake }) {
         </div>
 
         <div className="flex flex-1 flex-col p-5 sm:p-6">
-          <h3 className="mb-2 font-bold text-lg sm:text-xl text-[#422c31] leading-snug">
-            {cake.title}
-          </h3>
+          <div className="mb-2 flex items-start justify-between gap-3">
+            <h3 className="font-bold text-lg sm:text-xl leading-snug bg-gradient-to-l from-[#8b4a50] via-[#663d43] to-[#422c31] bg-clip-text text-transparent transition-all duration-300 group-hover:from-[#a05a60] group-hover:via-[#7a464c] group-hover:to-[#5a3a40]">
+              {cake.title}
+            </h3>
 
-          <p className="mb-4 flex-1 text-sm text-[#806e63] line-clamp-2">
-            {cake.description}
-          </p>
-
-          <div className="flex items-center justify-between pt-4 border-t border-[#eee5dc]">
-            <span className="font-bold text-lg text-[#663d43]">
+            <span className="shrink-0 inline-flex items-center rounded-full bg-[#f7ece2] px-3 py-1.5 text-sm font-bold text-[#8b4a50] ring-1 ring-[#e9d4c4] transition-colors duration-300 group-hover:bg-[#f1dfd0] group-hover:text-[#7a3f45]">
               {cake.price == null ? "السعر عند الطلب" : `${cake.price} ر.س`}
             </span>
-            <span className="text-xs font-medium text-[#a38a75]">
-              اضغط لعرض التفاصيل
-            </span>
           </div>
+
+          <p className="flex-1 text-sm leading-relaxed text-[#5c4a42]">
+            {cake.description}
+          </p>
         </div>
       </article>
     </Link>
