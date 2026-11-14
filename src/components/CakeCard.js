@@ -26,6 +26,14 @@ export default function CakeCard({ cake }) {
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
           />
+
+          <span className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3.5 py-2 text-xs font-semibold text-[#663d43] shadow-[0_6px_20px_rgba(71,44,35,0.18)] backdrop-blur transition-all duration-300 group-hover:bg-white group-hover:text-[#8b4a50] group-hover:shadow-[0_10px_26px_rgba(71,44,35,0.24)]">
+            عرض التفاصيل
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+          </span>
         </div>
 
         <div className="flex flex-1 flex-col p-5 sm:p-6">
@@ -41,12 +49,8 @@ export default function CakeCard({ cake }) {
             <span className="font-bold text-lg text-[#663d43]">
               {cake.price == null ? "السعر عند الطلب" : `${cake.price} ر.س`}
             </span>
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#663d43] transition-colors group-hover:text-[#8b4a50]">
-              عرض التفاصيل
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
+            <span className="text-xs font-medium text-[#a38a75]">
+              اضغط لعرض التفاصيل
             </span>
           </div>
         </div>
